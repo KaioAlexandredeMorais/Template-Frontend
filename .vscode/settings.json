@@ -1,9 +1,9 @@
 {
   "window.zoomLevel": 1,
   "breadcrumbs.enabled": false,
-  "editor.fontSize": 18,
-  "debug.console.fontSize": 20,
-  "terminal.integrated.fontSize": 16,
+  "editor.fontSize": 11,
+  "debug.console.fontSize": 10,
+  "terminal.integrated.fontSize": 12,
   "editor.glyphMargin": false,
   "workbench.activityBar.location": "default",
   "editor.lineNumbers": "on",
@@ -31,5 +31,11 @@
   },
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "chat.editor.fontSize": 10,
+  "chat.fontSize": 10,
+  "scm.inputFontSize": 10,
+  "markdown.preview.fontSize": 10,
+  "editor.minimap.sectionHeaderFontSize": 9,
+  "screencastMode.fontSize": 56
 }
