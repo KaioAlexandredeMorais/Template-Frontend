@@ -37,5 +37,6 @@
   "scm.inputFontSize": 10,
   "markdown.preview.fontSize": 10,
   "editor.minimap.sectionHeaderFontSize": 9,
-  "screencastMode.fontSize": 56
+  "screencastMode.fontSize": 56,
+  "workbench.editor.labelFormat": "short"
 }
