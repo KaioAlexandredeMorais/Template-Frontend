@@ -9,8 +9,13 @@
   --gray-800: #cdd3e1;
   --gray-900: #e6e9f0;
 
-  --text-default: #0a0f1a;
+  --text-default: #00091e;
   --text-muted: #272f43;
+  --text-over-primary: #e8e8e8;
+
+  --primary-light: #00091e;
+  --primary: #00091e;
+  --primary-dark: #0051ff;
 
   --link-color: #0b8a60;
   --link-hover: #065f46;
