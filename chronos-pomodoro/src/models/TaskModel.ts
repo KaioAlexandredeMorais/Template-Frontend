@@ -1,6 +1,9 @@
-export type TaskModel = {
-  id: string; // Identificador único da tarefa
-  name: string; // Nome digitado no input
-  duration: number; // Duração em minutos
-  startDate: number; // Timestamp de quando começou (usamos number para facilitar o localStorage)
-};
+export interface TaskModel {
+  id: string;
+  name: string;
+  startDate: Date;
+  completeDate: Date | null; // Verifique se o nome aqui é igual ao que você usa no MainForm
+  interruptDate: Date | null;
+  duration: number;
+  type: string;
+}
