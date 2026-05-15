@@ -43,7 +43,7 @@ export function Menu() {
     <nav className={styles.menu}>
       <RouterLink
         className={styles.menuLink}
-        href='/'
+        href='/home'
         aria-label='Ir para a Home'
         title='Ir para a Home'
       >

@@ -21,7 +21,7 @@
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#0da170",
+  "theme_color": "#EDA900",
   "background_color": "#0a0f1a",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "minimal-ui"],
