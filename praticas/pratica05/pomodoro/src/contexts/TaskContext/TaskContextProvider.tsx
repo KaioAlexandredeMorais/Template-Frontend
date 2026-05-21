@@ -7,6 +7,8 @@ import { TaskActionTypes } from './taskActions';
 import { loadBeep } from '../../utils/loadBeep';
 import type { TaskStateModel } from '../../models/TaskStateModel';
 
+const API_URL = 'http://localhost:3333';
+
 type TaskContextProviderProps = {
   children: React.ReactNode;
 };
@@ -14,11 +16,8 @@ type TaskContextProviderProps = {
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
   const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
     const storageState = localStorage.getItem('state');
-
     if (storageState === null) return initialTaskState;
-
     const parsedStorageState = JSON.parse(storageState) as TaskStateModel;
-
     return {
       ...parsedStorageState,
       activeTask: null,
@@ -28,21 +27,36 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
   });
 
   const playBeepRef = useRef<ReturnType<typeof loadBeep> | null>(null);
-
   const worker = TimerWorkerManager.getInstance();
+
+  // Carrega settings da API no startup
+  useEffect(() => {
+    fetch(`${API_URL}/settings`)
+      .then(res => res.json())
+      .then(data => {
+        dispatch({
+          type: TaskActionTypes.CHANGE_SETTINGS,
+          payload: {
+            workTime: data.workTime,
+            shortBreakTime: data.shortBreakTime,
+            longBreakTime: data.longBreakTime,
+          },
+        });
+      })
+      .catch(() => {
+        console.warn('API indisponível, usando configurações locais');
+      });
+  }, []);
 
   useEffect(() => {
     worker.onmessage(e => {
       const countDownSeconds = e.data;
-
       if (countDownSeconds <= 0) {
         if (playBeepRef.current) {
           playBeepRef.current();
           playBeepRef.current = null;
         }
-        dispatch({
-          type: TaskActionTypes.COMPLETE_TASK,
-        });
+        dispatch({ type: TaskActionTypes.COMPLETE_TASK });
         worker.terminate();
       } else {
         dispatch({
@@ -55,13 +69,8 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
 
   useEffect(() => {
     localStorage.setItem('state', JSON.stringify(state));
-
-    if (!state.activeTask) {
-      worker.terminate();
-    }
-
+    if (!state.activeTask) worker.terminate();
     document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
-
     worker.postMessage(state);
   }, [worker, state]);
 
