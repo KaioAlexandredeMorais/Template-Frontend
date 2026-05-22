@@ -17,9 +17,8 @@ const API_URL = 'http://localhost:3333';
 
 export function History() {
   const { state, dispatch } = useTaskContext();
-  const [confirmClearHistory, setConfirmClearHistory] = useState(false);
-  const [apiTasks, setApiTasks] = useState<TaskModel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClearing, setIsClearing] = useState(false);
 
   const [sortTasksOptions, setSortTaskOptions] = useState<SortTasksOptions>({
     tasks: [],
@@ -28,19 +27,20 @@ export function History() {
   });
 
   // Busca tasks da API
-  useEffect(() => {
+  function loadTasks() {
     setIsLoading(true);
     fetch(`${API_URL}/tasks`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao carregar histórico');
+        return res.json();
+      })
       .then(data => {
-        // Converte BigInt vindo como string para number
         const tasks: TaskModel[] = data.map((t: any) => ({
           ...t,
           startDate: Number(t.startDate),
           completeDate: t.completeDate ? Number(t.completeDate) : null,
           interruptDate: t.interruptDate ? Number(t.interruptDate) : null,
         }));
-        setApiTasks(tasks);
         setSortTaskOptions({
           tasks: sortTasks({ tasks }),
           field: 'startDate',
@@ -50,7 +50,6 @@ export function History() {
       .catch(() => {
         showMessage.error('Não foi possível carregar o histórico da API');
         // Fallback para tasks locais
-        setApiTasks(state.tasks);
         setSortTaskOptions({
           tasks: sortTasks({ tasks: state.tasks }),
           field: 'startDate',
@@ -58,17 +57,15 @@ export function History() {
         });
       })
       .finally(() => setIsLoading(false));
+  }
+
+  useEffect(() => {
+    loadTasks();
   }, []);
 
   useEffect(() => {
     document.title = 'Histórico - Chronos Pomodoro';
   }, []);
-
-  useEffect(() => {
-    if (!confirmClearHistory) return;
-    setConfirmClearHistory(false);
-    dispatch({ type: TaskActionTypes.RESET_STATE });
-  }, [confirmClearHistory, dispatch]);
 
   useEffect(() => {
     return () => { showMessage.dismiss(); };
@@ -87,10 +84,32 @@ export function History() {
     });
   }
 
-  function handleResetHistory() {
+  async function handleResetHistory() {
     showMessage.dismiss();
-    showMessage.confirm('Tem certeza?', confirmation => {
-      setConfirmClearHistory(confirmation);
+    showMessage.confirm('Tem certeza?', async confirmation => {
+      if (!confirmation) return;
+
+      setIsClearing(true);
+      try {
+        // Deleta no banco via API
+        const response = await fetch(`${API_URL}/tasks`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) throw new Error('Erro ao limpar histórico');
+
+        // Limpa o estado local também
+        dispatch({ type: TaskActionTypes.RESET_STATE });
+
+        // Atualiza a lista
+        setSortTaskOptions(prev => ({ ...prev, tasks: [] }));
+
+        showMessage.success('Histórico limpo com sucesso!');
+      } catch {
+        showMessage.error('Erro ao limpar histórico. Tente novamente.');
+      } finally {
+        setIsClearing(false);
+      }
     });
   }
 
@@ -107,8 +126,9 @@ export function History() {
                 icon={<TrashIcon />}
                 color='red'
                 aria-label='Apagar todo o histórico'
-                title='Apagar histórico'
+                title={isClearing ? 'Limpando...' : 'Apagar histórico'}
                 onClick={handleResetHistory}
+                disabled={isClearing}
               />
             </span>
           )}
