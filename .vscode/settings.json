@@ -1,8 +1,13 @@
 {
   "window.zoomLevel": 1,
   "breadcrumbs.enabled": false,
+<<<<<<< HEAD
+  "editor.fontSize": 11,
+  "debug.console.fontSize": 10,
+=======
   "editor.fontSize": 12,
   "debug.console.fontSize": 12,
+>>>>>>> main
   "terminal.integrated.fontSize": 12,
   "editor.glyphMargin": false,
   "workbench.activityBar.location": "default",
@@ -34,6 +39,14 @@
   },
   "chat.editor.fontSize": 10,
   "chat.fontSize": 10,
+<<<<<<< HEAD
+  "scm.inputFontSize": 10,
+  "markdown.preview.fontSize": 10,
+  "editor.minimap.sectionHeaderFontSize": 9,
+  "screencastMode.fontSize": 56,
+  "workbench.editor.labelFormat": "short"
+=======
   "scm.inputFontSize": 12,
   "markdown.preview.fontSize": 12
+>>>>>>> main
 }
