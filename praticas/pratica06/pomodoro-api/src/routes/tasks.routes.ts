@@ -3,11 +3,20 @@ import { prisma } from '../lib/prisma';
 
 export const tasksRouter = Router();
 
+function serializeTask(task: any) {
+  return {
+    ...task,
+    startDate: Number(task.startDate),
+    completeDate: task.completeDate ? Number(task.completeDate) : null,
+    interruptDate: task.interruptDate ? Number(task.interruptDate) : null,
+  };
+}
+
 tasksRouter.get('/', async (_req, res) => {
   const tasks = await prisma.task.findMany({
     orderBy: { startDate: 'desc' },
   });
-  return res.json(tasks);
+  return res.json(tasks.map(serializeTask));
 });
 
 tasksRouter.post('/', async (req, res) => {
@@ -23,7 +32,7 @@ tasksRouter.post('/', async (req, res) => {
     data: { id, name, duration, type, startDate: BigInt(startDate) },
   });
 
-  return res.status(201).json(task);
+  return res.status(201).json(serializeTask(task));
 });
 
 tasksRouter.patch('/:id/complete', async (req, res) => {
@@ -35,7 +44,7 @@ tasksRouter.patch('/:id/complete', async (req, res) => {
     data: { completeDate: BigInt(completeDate) },
   });
 
-  return res.json(task);
+  return res.json(serializeTask(task));
 });
 
 tasksRouter.patch('/:id/interrupt', async (req, res) => {
@@ -47,7 +56,7 @@ tasksRouter.patch('/:id/interrupt', async (req, res) => {
     data: { interruptDate: BigInt(interruptDate) },
   });
 
-  return res.json(task);
+  return res.json(serializeTask(task));
 });
 
 tasksRouter.delete('/', async (_req, res) => {

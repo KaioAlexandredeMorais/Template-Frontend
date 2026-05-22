@@ -3,7 +3,6 @@ import { Container } from '../../components/Container';
 import { DefaultButton } from '../../components/DefaultButton';
 import { Heading } from '../../components/Heading';
 import { MainTemplate } from '../../templates/MainTemplate';
-
 import styles from './styles.module.css';
 import { useTaskContext } from '../../contexts/TaskContext/useTaskContext';
 import { formatDate } from '../../utils/formatDate';
@@ -12,32 +11,54 @@ import { sortTasks, type SortTasksOptions } from '../../utils/sortTasks';
 import { useEffect, useState } from 'react';
 import { TaskActionTypes } from '../../contexts/TaskContext/taskActions';
 import { showMessage } from '../../adapters/showMessage';
+import type { TaskModel } from '../../models/TaskModel';
+
+const API_URL = 'http://localhost:3333';
 
 export function History() {
   const { state, dispatch } = useTaskContext();
   const [confirmClearHistory, setConfirmClearHistory] = useState(false);
-  const hasTasks = state.tasks.length > 0;
+  const [apiTasks, setApiTasks] = useState<TaskModel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [sortTasksOptions, setSortTaskOptions] = useState<SortTasksOptions>(
-    () => {
-      return {
-        tasks: sortTasks({ tasks: state.tasks }),
-        field: 'startDate',
-        direction: 'desc',
-      };
-    },
-  );
+  const [sortTasksOptions, setSortTaskOptions] = useState<SortTasksOptions>({
+    tasks: [],
+    field: 'startDate',
+    direction: 'desc',
+  });
 
+  // Busca tasks da API
   useEffect(() => {
-    setSortTaskOptions(prevState => ({
-      ...prevState,
-      tasks: sortTasks({
-        tasks: state.tasks,
-        direction: prevState.direction,
-        field: prevState.field,
-      }),
-    }));
-  }, [state.tasks]);
+    setIsLoading(true);
+    fetch(`${API_URL}/tasks`)
+      .then(res => res.json())
+      .then(data => {
+        // Converte BigInt vindo como string para number
+        const tasks: TaskModel[] = data.map((t: any) => ({
+          ...t,
+          startDate: Number(t.startDate),
+          completeDate: t.completeDate ? Number(t.completeDate) : null,
+          interruptDate: t.interruptDate ? Number(t.interruptDate) : null,
+        }));
+        setApiTasks(tasks);
+        setSortTaskOptions({
+          tasks: sortTasks({ tasks }),
+          field: 'startDate',
+          direction: 'desc',
+        });
+      })
+      .catch(() => {
+        showMessage.error('Não foi possível carregar o histórico da API');
+        // Fallback para tasks locais
+        setApiTasks(state.tasks);
+        setSortTaskOptions({
+          tasks: sortTasks({ tasks: state.tasks }),
+          field: 'startDate',
+          direction: 'desc',
+        });
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   useEffect(() => {
     document.title = 'Histórico - Chronos Pomodoro';
@@ -45,21 +66,16 @@ export function History() {
 
   useEffect(() => {
     if (!confirmClearHistory) return;
-
     setConfirmClearHistory(false);
-
     dispatch({ type: TaskActionTypes.RESET_STATE });
   }, [confirmClearHistory, dispatch]);
 
   useEffect(() => {
-    return () => {
-      showMessage.dismiss();
-    };
+    return () => { showMessage.dismiss(); };
   }, []);
 
   function handleSortTasks({ field }: Pick<SortTasksOptions, 'field'>) {
     const newDirection = sortTasksOptions.direction === 'desc' ? 'asc' : 'desc';
-
     setSortTaskOptions({
       tasks: sortTasks({
         direction: newDirection,
@@ -77,6 +93,8 @@ export function History() {
       setConfirmClearHistory(confirmation);
     });
   }
+
+  const hasTasks = sortTasksOptions.tasks.length > 0;
 
   return (
     <MainTemplate>
@@ -98,34 +116,22 @@ export function History() {
       </Container>
 
       <Container>
-        {hasTasks && (
+        {isLoading && (
+          <p style={{ textAlign: 'center' }}>Carregando histórico...</p>
+        )}
+
+        {!isLoading && hasTasks && (
           <div className={styles.responsiveTable}>
             <table>
               <thead>
                 <tr>
-                  <th
-                    onClick={() => handleSortTasks({ field: 'name' })}
-                    className={styles.thSort}
-                  >
-                    Tarefa ↕
-                  </th>
-                  <th
-                    onClick={() => handleSortTasks({ field: 'duration' })}
-                    className={styles.thSort}
-                  >
-                    Duração ↕
-                  </th>
-                  <th
-                    onClick={() => handleSortTasks({ field: 'startDate' })}
-                    className={styles.thSort}
-                  >
-                    Data ↕
-                  </th>
+                  <th onClick={() => handleSortTasks({ field: 'name' })} className={styles.thSort}>Tarefa ↕</th>
+                  <th onClick={() => handleSortTasks({ field: 'duration' })} className={styles.thSort}>Duração ↕</th>
+                  <th onClick={() => handleSortTasks({ field: 'startDate' })} className={styles.thSort}>Data ↕</th>
                   <th>Status</th>
                   <th>Tipo</th>
                 </tr>
               </thead>
-
               <tbody>
                 {sortTasksOptions.tasks.map(task => {
                   const taskTypeDictionary = {
@@ -147,7 +153,8 @@ export function History() {
             </table>
           </div>
         )}
-        {!hasTasks && (
+
+        {!isLoading && !hasTasks && (
           <p style={{ textAlign: 'center', fontWeight: 'bold' }}>
             Ainda não existem tarefas criadas.
           </p>

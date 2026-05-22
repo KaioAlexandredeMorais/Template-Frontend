@@ -11,19 +11,19 @@ import { TaskActionTypes } from '../../contexts/TaskContext/taskActions';
 import { Tips } from '../Tips';
 import { showMessage } from '../../adapters/showMessage';
 
+const API_URL = 'http://localhost:3333';
+
 export function MainForm() {
   const { state, dispatch } = useTaskContext();
   const taskNameInput = useRef<HTMLInputElement>(null);
   const lastTaskName = state.tasks[state.tasks.length - 1]?.name || '';
 
-  function handleCreateNewTask(event: React.FormEvent<HTMLFormElement>) {
+  async function handleCreateNewTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     showMessage.dismiss();
-
     if (taskNameInput.current === null) return;
 
     const taskName = taskNameInput.current.value.trim();
-
     if (!taskName) {
       showMessage.warn('Digite o nome da tarefa');
       return;
@@ -31,7 +31,6 @@ export function MainForm() {
 
     const nextCycle = getNextCycle(state.currentCycle);
     const nextCyleType = getNextCycleType(nextCycle);
-
     const newTask: TaskModel = {
       id: Date.now().toString(),
       name: taskName,
@@ -42,13 +41,42 @@ export function MainForm() {
       type: nextCyleType,
     };
 
+    try {
+      await fetch(`${API_URL}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newTask.id,
+          name: newTask.name,
+          duration: newTask.duration,
+          type: newTask.type,
+          startDate: newTask.startDate,
+        }),
+      });
+    } catch {
+      console.warn('API indisponível, task salva apenas localmente');
+    }
+
     dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });
     showMessage.success('Tarefa iniciada');
   }
 
-  function handleInterruptTask() {
+  async function handleInterruptTask() {
     showMessage.dismiss();
     showMessage.error('Tarefa interrompida!');
+
+    if (state.activeTask) {
+      try {
+        await fetch(`${API_URL}/tasks/${state.activeTask.id}/interrupt`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ interruptDate: Date.now() }),
+        });
+      } catch {
+        console.warn('API indisponível, interrupção salva apenas localmente');
+      }
+    }
+
     dispatch({ type: TaskActionTypes.INTERRUPT_TASK });
   }
 
@@ -65,17 +93,14 @@ export function MainForm() {
           defaultValue={lastTaskName}
         />
       </div>
-
       <div className='formRow'>
         <Tips />
       </div>
-
       {state.currentCycle > 0 && (
         <div className='formRow'>
           <Cycles />
         </div>
       )}
-
       <div className='formRow'>
         {!state.activeTask && (
           <DefaultButton
@@ -85,7 +110,6 @@ export function MainForm() {
             icon={<PlayCircleIcon />}
           />
         )}
-
         {!!state.activeTask && (
           <DefaultButton
             aria-label='Interromper tarefa atual'
