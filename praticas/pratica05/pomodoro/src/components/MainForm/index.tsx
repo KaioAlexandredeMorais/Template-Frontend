@@ -2,7 +2,7 @@ import { PlayCircleIcon, StopCircleIcon } from 'lucide-react';
 import { Cycles } from '../Cycles';
 import { DefaultButton } from '../DefaultButton';
 import { DefaultInput } from '../DefaultInput';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { TaskModel } from '../../models/TaskModel';
 import { useTaskContext } from '../../contexts/TaskContext/useTaskContext';
 import { getNextCycle } from '../../utils/getNextCycle';
@@ -17,6 +17,7 @@ export function MainForm() {
   const { state, dispatch } = useTaskContext();
   const taskNameInput = useRef<HTMLInputElement>(null);
   const lastTaskName = state.tasks[state.tasks.length - 1]?.name || '';
+  const [isStarting, setIsStarting] = useState(false);
 
   async function handleCreateNewTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +42,8 @@ export function MainForm() {
       type: nextCyleType,
     };
 
+    setIsStarting(true);
+
     try {
       await fetch(`${API_URL}/tasks`, {
         method: 'POST',
@@ -55,6 +58,8 @@ export function MainForm() {
       });
     } catch {
       console.warn('API indisponível, task salva apenas localmente');
+    } finally {
+      setIsStarting(false);
     }
 
     dispatch({ type: TaskActionTypes.START_TASK, payload: newTask });
@@ -105,9 +110,10 @@ export function MainForm() {
         {!state.activeTask && (
           <DefaultButton
             aria-label='Iniciar nova tarefa'
-            title='Iniciar nova tarefa'
+            title={isStarting ? 'Iniciando...' : 'Iniciar nova tarefa'}
             type='submit'
             icon={<PlayCircleIcon />}
+            disabled={isStarting}
           />
         )}
         {!!state.activeTask && (

@@ -174,10 +174,21 @@ export function History() {
           </div>
         )}
 
-        {!isLoading && !hasTasks && (
-          <p style={{ textAlign: 'center', fontWeight: 'bold' }}>
-            Ainda não existem tarefas criadas.
-          </p>
+        {isLoading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {[1, 2, 3].map(i => (
+              <div
+                key={i}
+                style={{
+                  height: '4rem',
+                  borderRadius: '0.8rem',
+                  backgroundColor: 'var(--gray-700)',
+                  opacity: 1 - i * 0.2,
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              />
+            ))}
+          </div>
         )}
       </Container>
     </MainTemplate>

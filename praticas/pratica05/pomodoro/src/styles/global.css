@@ -41,3 +41,8 @@ body {
   flex-direction: column;
   gap: 2.4rem;
 }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.2; }
+}
