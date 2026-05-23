@@ -1,0 +1,112 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-900);
+}
+
+.card {
+  background-color: var(--gray-800);
+  border-radius: 1.4rem;
+  padding: 3.2rem;
+  width: 100%;
+  max-width: 65rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.title {
+  color: var(--primary);
+  font-size: 3.5rem;
+  text-align: center;
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  margin-top: 0.8rem;
+}
+
+.submitButton {
+  background-color: var(--primary);
+  color: var(--text-over-primary);
+  border: none;
+  border-radius: 0.8rem;
+  padding: 1.2rem;
+  font-size: 1.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  margin-top: 0.4rem;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  color: var(--text-over-primary-dark);
+}
+
+.submitButton:disabled {
+  background-color: var(--disabled);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.feedback {
+  font-size: 1.3rem;
+  padding: 0.8rem 1rem;
+  border-radius: 0.6rem;
+  text-align: center;
+}
+
+.success {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.error {
+  background-color: rgba(215, 17, 17, 0.769);
+  color: var(--gray-100);
+}
+
+.info {
+  background-color: rgba(14, 165, 233, 0.15);
+  color: var(--info);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  color: var(--link-color);
+  font-size: 1.6rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+  padding: 0.2rem;
+}
+
+.linkButton:hover {
+  color: var(--link-hover);
+}
+
+.simulationText {
+  color: var(--text-muted);
+  text-align: center;
+  background-color: var(--gray-700);
+  padding: 1.6rem;
+  border-radius: 0.8rem;
+  line-height: 1.6;
+  font-size: 1.8rem;
+}
